@@ -1,0 +1,6 @@
+**/db.sqlite3
+**/vector_db
+**/__pycache__
+**/migrations
+**/media
+**/.env
