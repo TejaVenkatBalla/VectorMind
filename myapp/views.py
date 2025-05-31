@@ -71,20 +71,6 @@ class DocumentViewSet(viewsets.ModelViewSet):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-    @action(detail=True, methods=['post'])
-    def reprocess(self, request, pk=None):
-        """Reprocess a document"""
-        document = self.get_object()
-        processor = DocumentProcessor()
-        success = processor.process_document(document)
-        
-        if success:
-            return Response({"message": "Document reprocessed successfully"})
-        else:
-            return Response(
-                {"error": "Failed to reprocess document"}, 
-                status=status.HTTP_400_BAD_REQUEST
-            )
 
 
 class KnowledgeAssistantViewSet(viewsets.ViewSet):

@@ -40,10 +40,10 @@ class LLMService:
             input_variables=["context", "question"],
             template = (
                 "You are a precise and reliable assistant. "
-                "Answer the user's question strictly based on the provided context. "
+                "Answer the user's question strictly based on the provided context and also explain your answer. "
                 "Do not include any information that is not in the context. "
                 "If the answer cannot be found, say: 'I cannot find this information in the provided context.'\n\n"
-                "Use bullet points or concise sentences if helpful. Avoid speculation.\n\n"
+                "Avoid speculation.\n\n"
                 "Context:\n{context}\n\n"
                 "Question:\n{question}\n\n"
                 "Answer:"

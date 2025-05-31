@@ -10,7 +10,7 @@ from ..models import Document, DocumentChunk
 class RetrievalService:
     def __init__(self):
         self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
-        self.similarity_threshold = 0.3  # Minimum similarity score to consider relevant
+        self.similarity_threshold = 0.2  # Minimum similarity score to consider relevant
 
         # Load single FAISS index and metadata
         index_path = os.path.join(settings.VECTOR_DB_PATH, 'index.faiss')

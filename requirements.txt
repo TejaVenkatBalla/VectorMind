@@ -1,9 +1,7 @@
-# sentence-transformers
+
 Django
 djangorestframework
-openai
 faiss-cpu
-
 PyPDF2
 python-docx
 markdown
@@ -11,4 +9,8 @@ python-decouple
 redis
 django-cors-headers
 
+sentence-transformers
+
+langchain_google_genai
+langchain_core
 
