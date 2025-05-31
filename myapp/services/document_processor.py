@@ -145,36 +145,45 @@ class DocumentProcessor:
         DocumentChunk.objects.bulk_create(chunk_objects)
     
     def _create_embeddings(self, document: Document):
-        """Create embeddings for document chunks and store in FAISS"""
+        """Create embeddings for document chunks and store in a single FAISS index"""
         chunks = DocumentChunk.objects.filter(document=document)
         texts = [chunk.content for chunk in chunks]
-        
+
         # Generate embeddings
         embeddings = self.embedding_model.encode(texts)
-        
-        # Create or load FAISS index
-        index_path = os.path.join(settings.VECTOR_DB_PATH, f'index_{document.id}.faiss')
-        metadata_path = os.path.join(settings.VECTOR_DB_PATH, f'metadata_{document.id}.pkl')
-        
-        # Create FAISS index
+
+        # Common index and metadata paths
+        index_path = os.path.join(settings.VECTOR_DB_PATH, 'index.faiss')
+        metadata_path = os.path.join(settings.VECTOR_DB_PATH, 'metadata.pkl')
+
         dimension = embeddings.shape[1]
-        index = faiss.IndexFlatIP(dimension)  # Inner product for cosine similarity
-        
+
+        # Load or create FAISS index
+        if os.path.exists(index_path):
+            index = faiss.read_index(index_path)
+        else:
+            index = faiss.IndexFlatIP(dimension)  # Inner product for cosine similarity
+
         # Normalize embeddings for cosine similarity
         faiss.normalize_L2(embeddings)
         index.add(embeddings.astype('float32'))
-        
+
         # Save index
         faiss.write_index(index, index_path)
-        
-        # Save metadata (chunk IDs)
-        metadata = {
-            'chunk_ids': [str(chunk.id) for chunk in chunks],
-            'document_id': str(document.id)
-        }
-        
+
+        # Load or create metadata
+        if os.path.exists(metadata_path):
+            with open(metadata_path, 'rb') as f:
+                metadata = pickle.load(f)
+        else:
+            metadata = {'chunk_ids': [], 'document_ids': []}
+
+        # Update metadata
+        metadata['chunk_ids'].extend([str(chunk.id) for chunk in chunks])
+        metadata['document_ids'].append(str(document.id))
+
         with open(metadata_path, 'wb') as f:
             pickle.dump(metadata, f)
-        
+
         # Mark chunks as having embeddings stored
         chunks.update(embedding_stored=True)
