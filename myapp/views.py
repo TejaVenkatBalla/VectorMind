@@ -109,7 +109,7 @@ class KnowledgeAssistantViewSet(viewsets.ViewSet):
                 response_data = {
                     "answer": "I couldn't find any relevant information in the knowledge base to answer your question.",
                     "sources": [],
-                    "confidence": 0.0,
+                    # "confidence": 0.0,
                     "response_time": time.time() - start_time
                 }
             else:

@@ -10,8 +10,9 @@ from ..models import Document, DocumentChunk
 class RetrievalService:
     def __init__(self):
         self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+        self.similarity_threshold = 0.3  # Minimum similarity score to consider relevant
     
-    def retrieve_relevant_chunks(self, question: str, top_k: int = 3) -> List[Tuple[DocumentChunk, float]]:
+    def retrieve_relevant_chunks(self, question: str, top_k: int = 5) -> List[Tuple[DocumentChunk, float]]:
         """Retrieve most relevant chunks for a given question"""
         # Generate question embedding
         question_embedding = self.embedding_model.encode([question])
@@ -39,7 +40,7 @@ class RetrievalService:
             
             # Get corresponding chunks
             for score, idx in zip(scores[0], indices[0]):
-                if idx >= 0:  # Valid index
+                if idx >= 0 and score >= self.similarity_threshold:  # Only include if above threshold
                     chunk_id = metadata['chunk_ids'][idx]
                     try:
                         chunk = DocumentChunk.objects.get(id=chunk_id)
@@ -49,5 +50,4 @@ class RetrievalService:
         
         # Sort by score and return top_k
         all_results.sort(key=lambda x: x[1], reverse=True)
-        print(all_results)
         return all_results[:top_k]

@@ -11,6 +11,8 @@ from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 from langchain.schema.runnable import RunnableConfig
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 
 class LLMService:
@@ -36,11 +38,17 @@ class LLMService:
         # Define the prompt
         prompt_template = PromptTemplate(
             input_variables=["context", "question"],
-            template=(
-                "You are a helpful assistant that answers questions based only on the provided context. "
-                "If the answer cannot be found in the context, say 'I cannot find this information in the provided context.'\n\n"
-                "Context:\n{context}\n\nQuestion:\n{question}"
+            template = (
+                "You are a precise and reliable assistant. "
+                "Answer the user's question strictly based on the provided context. "
+                "Do not include any information that is not in the context. "
+                "If the answer cannot be found, say: 'I cannot find this information in the provided context.'\n\n"
+                "Use bullet points or concise sentences if helpful. Avoid speculation.\n\n"
+                "Context:\n{context}\n\n"
+                "Question:\n{question}\n\n"
+                "Answer:"
             )
+
         )
 
         chain = LLMChain(llm=self.llm, prompt=prompt_template)
@@ -55,7 +63,7 @@ class LLMService:
             result = {
                 "answer": answer,
                 "sources": sources,
-                "confidence": self._calculate_confidence(relevant_chunks)
+                # "confidence": self._calculate_confidence(relevant_chunks)
             }
 
             # Cache the response for 1 hour
@@ -66,8 +74,8 @@ class LLMService:
         except Exception as e:
             return {
                 "answer": f"I apologize, but I encountered an error while processing your question: {str(e)}",
-                "sources": [],
-                "confidence": 0.0
+                "sources": []
+                #"confidence": 0.0
             }
 
     
@@ -102,14 +110,14 @@ Answer:"""
         
         return list(set(sources))  # Remove duplicates    
     
-    def _calculate_confidence(self, relevant_chunks: List[Tuple[DocumentChunk, float]]) -> float:
-        """Calculate confidence score based on retrieval scores"""
-        if not relevant_chunks:
-            return 0.0
+    # def _calculate_confidence(self, relevant_chunks: List[Tuple[DocumentChunk, float]]) -> float:
+    #     """Calculate confidence score based on retrieval scores"""
+    #     if not relevant_chunks:
+    #         return 0.0
         
-        # Average of top chunk scores
-        scores = [score for _, score in relevant_chunks]
-        return sum(scores) / len(scores)
+    #     # Average of top chunk scores
+    #     scores = [score for _, score in relevant_chunks]
+    #     return sum(scores) / len(scores)
     
     def _generate_cache_key(self, question: str, relevant_chunks: List[Tuple[DocumentChunk, float]]) -> str:
         """Generate cache key for the query"""
