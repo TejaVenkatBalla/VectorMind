@@ -1,16 +1,13 @@
-
 Django
 djangorestframework
-faiss-cpu
 PyPDF2
 python-docx
 markdown
-python-decouple
+
 redis
-django-cors-headers
-
+faiss-cpu
 sentence-transformers
-
 langchain_google_genai
 langchain_core
+
 

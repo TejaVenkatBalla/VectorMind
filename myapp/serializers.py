@@ -57,13 +57,7 @@ class DocumentSerializer(serializers.ModelSerializer):
 
 class QuestionSerializer(serializers.Serializer):
     question = serializers.CharField(max_length=1000)
-
-class AnswerSerializer(serializers.Serializer):
-    answer = serializers.CharField()
-    sources = serializers.ListField(child=serializers.CharField())
-    confidence = serializers.FloatField()
-    response_time = serializers.FloatField()
-
+    
 class QueryLogSerializer(serializers.ModelSerializer):
     class Meta:
         model = QueryLog

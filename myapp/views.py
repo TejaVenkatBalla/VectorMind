@@ -1,7 +1,18 @@
-from django.shortcuts import render
-
-from rest_framework.decorators import api_view
+from rest_framework import viewsets, status
+from rest_framework.decorators import action,api_view
 from rest_framework.response import Response
+import time
+from .models import Document, QueryLog
+from .services.document_processor import DocumentProcessor
+from .services.retrieval_service import RetrievalService
+from .services.llm_service import LLMService
+from .serializers import (
+    DocumentUploadSerializer, 
+    DocumentSerializer, 
+    QuestionSerializer, 
+    QueryLogSerializer
+)
+
 
 @api_view(['GET'])
 def home(request):
@@ -9,29 +20,8 @@ def home(request):
         
         return Response({"message": "Welcome to the home page!"})
 
-
-
-from rest_framework import viewsets, status
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from django.utils import timezone
-import time
-from .models import Document, QueryLog
-from .serializers import (
-    DocumentUploadSerializer, 
-    DocumentSerializer, 
-    QuestionSerializer, 
-    AnswerSerializer,
-    QueryLogSerializer
-)
-from .services.document_processor import DocumentProcessor
-from .services.retrieval_service import RetrievalService
-from .services.llm_service import LLMService
-
 class DocumentViewSet(viewsets.ModelViewSet):
     serializer_class = DocumentSerializer
-    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
         return Document.objects.filter(uploaded_by=self.request.user)
@@ -71,10 +61,7 @@ class DocumentViewSet(viewsets.ModelViewSet):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
-
-
 class KnowledgeAssistantViewSet(viewsets.ViewSet):
-    permission_classes = [IsAuthenticated]
     
     @action(detail=False, methods=['post'])
     def ask_question(self, request):
