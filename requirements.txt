@@ -13,3 +13,4 @@ langchain_core
 djangorestframework-simplejwt
 django-cors-headers
 gunicorn
+celery
