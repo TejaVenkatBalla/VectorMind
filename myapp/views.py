@@ -4,6 +4,7 @@ from rest_framework.response import Response
 import time
 from .models import Document, QueryLog
 from .services.document_processor import DocumentProcessor
+from .tasks import process_document_task
 from .services.retrieval_service import RetrievalService
 from .services.llm_service import LLMService
 from .serializers import (
@@ -69,20 +70,11 @@ class DocumentViewSet(viewsets.ModelViewSet):
             document = serializer.save()
             
             # Process document asynchronously (you can use Celery for this)
-            processor = DocumentProcessor()
-            success = processor.process_document(document)
+            process_document_task.delay(document.id)
             
-            if success:
-                response_data = DocumentSerializer(document).data
-                response_data['message'] = f"Document '{document.title}' uploaded and processed successfully"
-                return Response(response_data, status=status.HTTP_201_CREATED)
-            else:
-                # Clean up if processing failed
-                document.delete()
-                return Response(
-                    {"error": "Failed to process document"}, 
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+            response_data = DocumentSerializer(document).data
+            response_data['message'] = f"Document '{document.title}' uploaded successfully. Processing started asynchronously."
+            return Response(response_data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
