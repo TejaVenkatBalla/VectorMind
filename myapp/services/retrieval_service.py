@@ -25,10 +25,10 @@ class RetrievalService:
             with open(metadata_path, 'rb') as f:
                 self.metadata = pickle.load(f)
         else:
-            self.metadata = {'chunk_ids': [], 'document_ids': []}
+            self.metadata = {'chunk_ids': [], 'document_ids': [], 'user_ids': []}
 
-    def retrieve_relevant_chunks(self, question: str, top_k: int = 5) -> List[Tuple[DocumentChunk, float]]:
-        """Retrieve most relevant chunks for a given question"""
+    def retrieve_relevant_chunks(self, question: str, user_id: str, top_k: int = 5) -> List[Tuple[DocumentChunk, float]]:
+        """Retrieve most relevant chunks for a given question and user_id"""
         if self.index is None or not self.metadata['chunk_ids']:
             return []
 
@@ -41,15 +41,16 @@ class RetrievalService:
 
         all_results = []
 
-        # Get corresponding chunks
+        # Get corresponding chunks filtered by user_id
         for score, idx in zip(scores[0], indices[0]):
-            if idx >= 0 and score >= self.similarity_threshold:  # Only include if above threshold
-                chunk_id = self.metadata['chunk_ids'][idx]
-                try:
-                    chunk = DocumentChunk.objects.get(id=chunk_id)
-                    all_results.append((chunk, float(score)))
-                except DocumentChunk.DoesNotExist:
-                    continue
+            if idx >= 0 and score >= self.similarity_threshold:
+                if self.metadata['user_ids'][idx] == user_id:
+                    chunk_id = self.metadata['chunk_ids'][idx]
+                    try:
+                        chunk = DocumentChunk.objects.get(id=chunk_id)
+                        all_results.append((chunk, float(score)))
+                    except DocumentChunk.DoesNotExist:
+                        continue
 
         # Sort by score and return top_k
         all_results.sort(key=lambda x: x[1], reverse=True)

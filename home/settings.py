@@ -152,3 +152,10 @@ CACHES = {
         'LOCATION': os.environ.get("REDIS_URL",'redis://127.0.0.1:6379/'),
     }
 }
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),  # Change this as needed
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}

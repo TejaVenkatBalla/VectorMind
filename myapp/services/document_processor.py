@@ -176,11 +176,12 @@ class DocumentProcessor:
             with open(metadata_path, 'rb') as f:
                 metadata = pickle.load(f)
         else:
-            metadata = {'chunk_ids': [], 'document_ids': []}
+            metadata = {'chunk_ids': [], 'document_ids': [], 'user_ids': []}
 
         # Update metadata
         metadata['chunk_ids'].extend([str(chunk.id) for chunk in chunks])
         metadata['document_ids'].append(str(document.id))
+        metadata['user_ids'].extend([str(chunk.document.uploaded_by.id) for chunk in chunks])
 
         with open(metadata_path, 'wb') as f:
             pickle.dump(metadata, f)

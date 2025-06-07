@@ -99,9 +99,10 @@ class KnowledgeAssistantViewSet(viewsets.ViewSet):
         start_time = time.time()
         
         try:
-            # Retrieve relevant chunks
+            # Retrieve relevant chunks with user_id filtering
             retrieval_service = RetrievalService()
-            relevant_chunks = retrieval_service.retrieve_relevant_chunks(question)
+            user_id = str(request.user.id)
+            relevant_chunks = retrieval_service.retrieve_relevant_chunks(question, user_id=user_id)
             
             if not relevant_chunks:
                 response_data = {
