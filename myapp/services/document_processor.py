@@ -2,16 +2,19 @@ import PyPDF2
 import docx
 import markdown
 from typing import List, Tuple
-from sentence_transformers import SentenceTransformer
+import numpy as np
+#from sentence_transformers import SentenceTransformer
 import faiss
 import pickle
 import os
 from django.conf import settings
 from ..models import Document, DocumentChunk
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 
 class DocumentProcessor:
     def __init__(self):
-        self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+        #self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+        self.embedding_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001",api_key=os.environ.get("GOOGLE_API_KEY")) 
         self.chunk_size = 1000
         self.chunk_overlap = 200
         
@@ -150,14 +153,18 @@ class DocumentProcessor:
         texts = [chunk.content for chunk in chunks]
 
         # Generate embeddings
-        embeddings = self.embedding_model.encode(texts)
-
+        embeddings_list = self.embedding_model.embed_documents(texts)
+        
+        # Convert to numpy array
+        embeddings = np.array(embeddings_list, dtype=np.float32)
+        
         # Common index and metadata paths
         index_path = os.path.join(settings.VECTOR_DB_PATH, 'index.faiss')
         metadata_path = os.path.join(settings.VECTOR_DB_PATH, 'metadata.pkl')
 
-        dimension = embeddings.shape[1]
-
+        dimension = embeddings.shape[1] if len(embeddings) > 0 else 0
+        print(f"Embedding dimension: {dimension}")
+        
         # Load or create FAISS index
         if os.path.exists(index_path):
             index = faiss.read_index(index_path)
@@ -166,7 +173,7 @@ class DocumentProcessor:
 
         # Normalize embeddings for cosine similarity
         faiss.normalize_L2(embeddings)
-        index.add(embeddings.astype('float32'))
+        index.add(embeddings)
 
         # Save index
         faiss.write_index(index, index_path)

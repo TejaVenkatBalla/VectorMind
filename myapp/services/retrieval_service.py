@@ -3,13 +3,14 @@ import pickle
 import os
 import numpy as np
 from typing import List, Tuple
-from sentence_transformers import SentenceTransformer
+#from sentence_transformers import SentenceTransformer
 from django.conf import settings
 from ..models import Document, DocumentChunk
-
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
 class RetrievalService:
     def __init__(self):
-        self.embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+        
+        self.embedding_model = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
         self.similarity_threshold = 0.2  # Minimum similarity score to consider relevant
 
         # Load single FAISS index and metadata
@@ -33,7 +34,12 @@ class RetrievalService:
             return []
 
         # Generate question embedding
-        question_embedding = self.embedding_model.encode([question])
+        #question_embedding = self.embedding_model.encode([question])
+        question_embedding_list = self.embedding_model.embed_query(question)
+
+        # Convert to numpy array and reshape for FAISS (needs 2D array)
+        question_embedding = np.array([question_embedding_list], dtype=np.float32)
+
         faiss.normalize_L2(question_embedding)
 
         # Search

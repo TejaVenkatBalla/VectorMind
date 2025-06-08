@@ -6,7 +6,7 @@ markdown
 
 redis
 faiss-cpu
-sentence-transformers
+
 langchain_google_genai
 langchain_core
 
