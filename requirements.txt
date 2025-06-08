@@ -9,6 +9,7 @@ faiss-cpu
 
 langchain_google_genai
 langchain_core
+langchain
 
 djangorestframework-simplejwt
 django-cors-headers
