@@ -28,8 +28,10 @@ services:
   frontend:
     build:
       context: ./frontend
-    ports:
-      - "80:80"
+    # ports:
+    #   - "80:80"
+    expose:
+      - "80"
 
 volumes:
   app-data:
